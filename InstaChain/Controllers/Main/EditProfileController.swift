@@ -88,6 +88,33 @@ class EditProfileController: UIViewController {
 
 extension EditProfileController {
     
+    fileprivate func checkPrivateKeyType() -> Bool {
+        
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return false }
+        
+        if privateKeyType == PrivateKeyType.owner.rawValue || privateKeyType == PrivateKeyType.active.rawValue {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    fileprivate func getPrivateKey() -> String? {
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return nil }
+        if privateKeyType == PrivateKeyType.owner.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.owner else { return nil }
+            return key
+        } else {
+            guard let key = CurrentSession.getI().localData.privWif?.active else { return nil }
+            return key
+        }
+        
+    }
+    
+}
+
+extension EditProfileController {
+    
     fileprivate func handleProfileData() {
         
         guard let profileData = userData[0] else { return }
@@ -165,6 +192,16 @@ extension EditProfileController {
             return
         }
         
+        guard checkPrivateKeyType() else {
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
+        guard let privateKey = self.getPrivateKey() else {
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
         SVProgressHUD.show()
         
         let cloudinary = Constants.cloudinary
@@ -180,7 +217,7 @@ extension EditProfileController {
             print(CurrentSession.getI().localData.pubWif?.memo)
             self.userData[0]?.jsonMetadata?.profile?.profileImage = result?.url
             if let userInfoMetaData = self.userData[0]?.jsonMetadata, let memoKey = CurrentSession.getI().localData.pubWif?.memo, let name = self.data?.name {
-                self.editImage(name: name, wif: CurrentSession.getI().localData.privWif?.active ?? "", memoKey: memoKey, jsonMetaData: userInfoMetaData)
+                self.editImage(name: name, wif: privateKey, memoKey: memoKey, jsonMetaData: userInfoMetaData)
             }
             
             
@@ -226,8 +263,19 @@ extension EditProfileController {
                 } else {
                     
                     _ = response as? HTTPURLResponse
-                    let responseString = String(data: data!, encoding: .utf8)
-                    let key = Mapper<ProfileUpdateResponseData>().map(JSONString: responseString!)
+                    guard let responseString = String(data: data!, encoding: .utf8) else { return }
+                    
+                    print("responseString, ", responseString)
+                    
+                    if responseString.range(of: "basic_exception") != nil {
+                        DispatchQueue.main.async {
+                            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+                        }
+                        
+                        return
+                    }
+                    
+                    let key = Mapper<ProfileUpdateResponseData>().map(JSONString: responseString)
                     CurrentSession.getI().localData.userBaseInfo?.jsonMetadata?.profile?.profileImage = jsonMetaData.profile?.profileImage
                     CurrentSession.getI().localData.userBaseInfo?.jsonMetadata?.profile?.name = jsonMetaData.profile?.name
                     CurrentSession.getI().localData.userBaseInfo?.jsonMetadata?.profile?.location = jsonMetaData.profile?.location
@@ -288,6 +336,15 @@ extension EditProfileController {
             self.showJHTAlerttOkayWithIcon(message: "Please enter your username")
             return
         }
+        guard checkPrivateKeyType() else {
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
+        guard let privateKey = self.getPrivateKey() else {
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
         
         guard let username = usernameTextField.text else { return }
         let location = locationTextField.text
@@ -330,7 +387,9 @@ extension EditProfileController {
         
         view.addSubview(photoCameraButton)
         
-        _ = photoCameraButton.anchor(nil, left: nil, bottom: userImageView.bottomAnchor, right: userImageView.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 30, heightConstant: 30)
+        _ = photoCameraButton.anchor(nil, left: nil, bottom: nil, right: nil, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 30, heightConstant: 30)
+        photoCameraButton.centerXAnchor.constraint(equalTo: userImageView.centerXAnchor).isActive = true
+        photoCameraButton.centerYAnchor.constraint(equalTo: userImageView.centerYAnchor).isActive = true
     }
     
     private func setupNavBar() {

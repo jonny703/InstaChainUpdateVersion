@@ -154,6 +154,8 @@ extension CommentsController {
     
     func getDisscussionCommentReplies(author: String, permlink: String, index: Int) {
         
+        self.recievedRepliesCount += 1
+        
         AppServerRequests.getCommentsOfPost(author: author, permlink: permlink) {
             [weak self] (r) in
             
@@ -167,8 +169,6 @@ extension CommentsController {
                 if let data = d as? [PostData] {
                     
                     strongSelf.comments[index].replies = data.reversed()
-                    
-                    strongSelf.recievedRepliesCount += 1
                     
                     if strongSelf.recievedRepliesCount == strongSelf.sendRepliesCount {
                         DispatchQueue.main.async {

@@ -19,7 +19,7 @@ extension UIViewController {
     
     func showJHTAlerttOkayWithIcon(message: String) {
         
-        let alertController = JHTAlertController(title: "InstaChain", message: message, preferredStyle: .alert)
+        let alertController = JHTAlertController(title: "", message: message, preferredStyle: .alert)
         alertController.titleImage = UIImage(named: AssetName.alertIcon.rawValue)
         alertController.titleViewBackgroundColor = .white
         alertController.titleTextColor = .black
@@ -41,7 +41,7 @@ extension UIViewController {
     
     func showJHTAlerttOkayActionWithIcon(message: String, action: JHTAlertActionHandler) {
         
-        let alertController = JHTAlertController(title: "InstaChain", message: message, preferredStyle: .alert)
+        let alertController = JHTAlertController(title: "", message: message, preferredStyle: .alert)
         alertController.titleImage = UIImage(named: AssetName.alertIcon.rawValue)
         alertController.titleViewBackgroundColor = .white
         alertController.titleTextColor = .black
@@ -63,7 +63,7 @@ extension UIViewController {
     
     func showJHTAlertDefaultWithIcon(message: String, firstActionTitle: String, secondActionTitle: String, action: JHTAlertActionHandler) {
         
-        let alertController = JHTAlertController(title: "InstaChain", message: message, preferredStyle: .alert)
+        let alertController = JHTAlertController(title: "", message: message, preferredStyle: .alert)
         alertController.titleImage = UIImage(named: AssetName.alertIcon.rawValue)
         alertController.titleViewBackgroundColor = .white
         alertController.titleTextColor = .black

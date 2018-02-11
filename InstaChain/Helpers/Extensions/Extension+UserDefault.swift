@@ -7,6 +7,16 @@
 //
 
 import Foundation
+
+
+enum PrivateKeyType: String {
+    case owner = "owner"
+    case active = "active"
+    case posting = "posting"
+    case memo = "memo"
+    case master = "master"
+}
+
 extension UserDefaults {
     
     
@@ -24,6 +34,19 @@ extension UserDefaults {
         case security
         case securityCode
         case darkMode
+        case keyType
+    }
+    
+    func setPrivateKeyType(_ code: String) {
+        set(code, forKey: UserDefaultsKeys.keyType.rawValue)
+        synchronize()
+    }
+    
+    func getPrivateKeyType() -> String? {
+        if let code = string(forKey: UserDefaultsKeys.keyType.rawValue) {
+            return code
+        }
+        return nil
     }
     
     //MARK: remember

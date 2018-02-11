@@ -13,6 +13,7 @@ class ServerUrls {
     static let baseUrl = "http://api.instachain.io:3000/"
     
     static let loginUrl = ServerUrls.baseUrl + "getAccounts"
+    static let newLoginUrl = ServerUrls.baseUrl + "auth/login"
     static let authUserUrl = ServerUrls.baseUrl + "auth/to_wif"
     static let postComment = ServerUrls.baseUrl + "broadcast/comment"
     static let wifValid = ServerUrls.baseUrl + "auth/wif_is_valid"
@@ -29,6 +30,6 @@ class ServerUrls {
     static let discussionByHot = ServerUrls.baseUrl + "get_discussions_by_hot"
     static let discussionByTrending = ServerUrls.baseUrl + "get_discussions_by_trending"
     static let discussionCreatedBy = ServerUrls.baseUrl + "get_discussions_by_created"
-
+    static let getLookupAccounts = ServerUrls.baseUrl + "lookup_accounts?%@&limit=50"
 
 }

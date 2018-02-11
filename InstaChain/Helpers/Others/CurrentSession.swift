@@ -76,7 +76,7 @@ class CurrentSession {
         ud.set(localData.toJSONString() ?? "", forKey: KEY_LOCAL_DATA)
        
 
-
+        ud.synchronize()
 
     }
 

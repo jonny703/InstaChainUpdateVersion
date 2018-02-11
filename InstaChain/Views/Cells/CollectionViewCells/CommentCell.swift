@@ -12,7 +12,7 @@ import ObjectMapper
 class CommentCell: BaseCollectionViewCell {
     
     var commentController: CommentsController?
-    var isUserLikePost: Bool?
+    var isUserLikePost = false
     var votesCount: Int = 0
     
     var comment: PostData? {
@@ -28,12 +28,11 @@ class CommentCell: BaseCollectionViewCell {
             
             votesCount = comment.netVotes
             if votesCount > 0 {
-                let likeTitle = "\(votesCount) Interests"
+                let likeTitle = "\(votesCount) Likes"
                 likesLabel.text = likeTitle
             }
-            if let like = checkUserLikeStatus(data: comment.activeVotes) {
-                likesButton.tintColor = like ? StyleGuideManager.realyfeDefaultGreenColor : UIColor.darkGray
-            }
+            
+            self.resetLikeButtonTintColor(isLike: checkUserLikeStatus(data: comment.activeVotes))
             
             guard let imageUrlStr = comment.authorProfileImage, let imageUrl = URL(string: imageUrlStr) else { return }
             profileImageView.sd_addActivityIndicator()
@@ -71,14 +70,14 @@ class CommentCell: BaseCollectionViewCell {
     let likesLabel:UILabel = {
         
         let label = UILabel()
-        label.text = "0 Interests"
+        label.text = "0 Likes"
         label.textColor = DarkModeManager.getDefaultTextColor()
         return label
     }()
     
     lazy var likesButton: UIButton = {
         let button = UIButton(type: .system)
-        let image = UIImage(named: AssetName.commentLike.rawValue)?.withRenderingMode(.alwaysTemplate)
+        let image = UIImage(named: AssetName.normalLike.rawValue)?.withRenderingMode(.alwaysTemplate)
         button.tintColor = .lightGray
         button.setImage(image, for: .normal)
         button.addTarget(self, action: #selector(handleLike), for: .touchUpInside)
@@ -133,10 +132,8 @@ class CommentCell: BaseCollectionViewCell {
         
         let author = discussion.author
         let permlink = discussion.permlink
-        var weight = 10000
-        if let isUserLikePost = self.isUserLikePost {
-            weight = isUserLikePost ? 0 : 10000
-        }
+        let weight = isUserLikePost ? 0 : 10000
+        
         guard let wif = CurrentSession.getI().localData.privWif?.active else { return }
         
         self.giveVoteToPost(author: author, permlink: permlink, weight: weight, wif: wif)
@@ -148,76 +145,95 @@ class CommentCell: BaseCollectionViewCell {
     }
     
     func giveVoteToPost(author: String, permlink: String, weight: Int, wif: String) {
-        
+        guard ReachabilityManager.shared.internetIsUp else {
+            commentController?.showJHTAlerttOkayWithIcon(message: AlertMessages.failedInternetTitle.rawValue)
+            return
+        }
         
         let data = CurrentSession.getI().localData.userBaseInfo
         
         AppServerRequests.voteToDiscussion(voter: data!.name, author: author, permlink: permlink, weight: weight, wif: wif, completionHandler: { (data, response, error) -> Void in
+            
+            DispatchQueue.main.async {
+                self.likesButton.isUserInteractionEnabled = true
+            }
+            
             if (error != nil) {
-                print(error)
+                print(error!)
             } else {
                 _ = response as? HTTPURLResponse
                 let responseString = String(data: data!, encoding: .utf8)
-                print(responseString)
+                print(responseString!)
                 let key = Mapper<VoteResponseData>().map(JSONString: responseString!)
-                
-                
                 print(key?.refBlockNum)
+                
                 if key != nil {
                     
-                    if let isUserLikePost = self.isUserLikePost {
-                        self.isUserLikePost = !isUserLikePost
-                    } else {
-                        self.isUserLikePost = true
-                        self.votesCount = self.votesCount + 1
-                    }
-                    DispatchQueue.main.async {
-                        
-                        self.resetLikeStatus()
-                    }
-                    
-                }else{
-                    
-                    DispatchQueue.main.async {
-                        
-                        if let commentController = self.commentController {
-                            commentController.showJHTAlerttOkayWithIcon(message: "You have reached your limit")
+                    if self.isUserLikePost {
+                        if self.votesCount != 0 {
+                            self.votesCount -= 1
                         }
+                        
+                    } else {
+                        self.votesCount += 1
+                        
+                    }
+                    self.isUserLikePost = !self.isUserLikePost
+                    
+                    DispatchQueue.main.async {
+                        self.likesLabel.text = "\(self.votesCount)" + " Likes"
+                        self.resetLikeButtonTintColor(isLike: self.isUserLikePost)
+                    }
+                    
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        
+                        
+                        if responseString?.range(of: "You have already voted in a similar way") != nil {
+                            if let commentController = self.commentController {
+                                commentController.showJHTAlerttOkayWithIcon(message: "You have already voted in a similar way")
+                            }
+                        } else {
+                            if let commentController = self.commentController {
+                                commentController.showJHTAlerttOkayWithIcon(message: "You have reached your limit")
+                            }
+                        }
+                        
+                        
                     }
                 }
+                
             }
         })
         
     }
     
-    func resetLikeStatus() {
-        
-        if self.votesCount >= 0 {
-            likesLabel.text = "\(self.votesCount)" + " Interests"
-        }
-        
-        if let isUserLikePost = self.isUserLikePost {
-            likesButton.tintColor =  isUserLikePost ? StyleGuideManager.realyfeDefaultGreenColor : UIColor.darkGray
-            
-        }
-        likesButton.isUserInteractionEnabled = true
-    }
-    
-    func checkUserLikeStatus(data: [ActiveVoterData]) -> Bool? {
+    func checkUserLikeStatus(data: [ActiveVoterData]) -> Bool {
         for i in 0..<data.count{
             if data[i].voter == CurrentSession.getI().localData.userBaseInfo?.name {
-                if data[i].weight != 0 {
-                    isUserLikePost = true
-                    
-                    return true
-                }else {
-                    isUserLikePost = false
-                    
+                
+                if data[i].percent == 0 {
+                    self.isUserLikePost = false
                     return false
-                    
+                } else {
+                    self.isUserLikePost = true
+                    return true
                 }
             }
         }
-        return nil
+        return false
+    }
+    
+    func resetLikeButtonTintColor(isLike: Bool) {
+        if isLike {
+            self.likesButton.tintColor = StyleGuideManager.realyfeDefaultGreenColor
+            let image = UIImage(named: AssetName.commentLike.rawValue)
+            self.likesButton.setImage(image, for: .normal)
+        } else {
+            self.likesButton.tintColor = UIColor.lightGray
+            let image = UIImage(named: AssetName.normalLike.rawValue)
+            self.likesButton.setImage(image, for: .normal)
+        }
     }
 }

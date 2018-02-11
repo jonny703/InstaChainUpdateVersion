@@ -27,6 +27,8 @@ enum AssetName: String {
     case myProfile = "profileIcon"
     case editIcon = "edit"
     case commentLike = "like"
+    case normalLike = "normalLike"
+    case qrCode = "qr-code"
     
     case followIcon = "+ follow icon"
     case unfollowIcon = "icons8-checkmark-filled-50"

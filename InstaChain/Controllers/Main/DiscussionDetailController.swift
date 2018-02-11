@@ -25,8 +25,7 @@ class DiscussionDetailController: UIViewController {
         
         didSet {
             
-            guard let discussion = discussion else { return }
-            self.discussionDetail(author: discussion.author, permalink: discussion.permlink)
+            self.fetchDiscussionDetailData()
         }
         
     }
@@ -48,6 +47,15 @@ class DiscussionDetailController: UIViewController {
         super.viewDidLoad()
         
         setupViews()
+    }
+    
+}
+
+extension DiscussionDetailController {
+    
+    func fetchDiscussionDetailData() {
+        guard let discussion = discussion else { return }
+        self.discussionDetail(author: discussion.author, permalink: discussion.permlink)
     }
     
 }
