@@ -9,14 +9,16 @@
 import UIKit
 import SVProgressHUD
 import DZNEmptyDataSet
+import ObjectMapper
 
 class UserSearchController: UIViewController {
     
     let cellId = "cellId"
     
-    var filteredUsers = [UserInfoData]()
-    var users = [UserInfoData]()
+    var sendRepliesCount = 0
+    var recievedRepliesCount = 0
 
+    var lookupUsers = [LookupUser]()
     
     lazy var searchBar: UISearchBar = {
         let sb = UISearchBar()
@@ -91,53 +93,79 @@ extension UserSearchController: DZNEmptyDataSetSource, DZNEmptyDataSetDelegate {
 
 extension UserSearchController {
     
-    fileprivate func getUserInfo(name: String) {
-        
-        SVProgressHUD.show()
-        
-        AppServerRequests.fetchUserBaseInformation(username: name){
-            [weak self] (r) in
-            
-            guard let strongSelf = self else {
-                SVProgressHUD.dismiss()
-                return }
-            switch r {
-            case .success (let d):
-                if let data = d as? Array<UserInfoData> {
-                    strongSelf.users.removeAll()
-                    strongSelf.users = data
-                    SVProgressHUD.dismiss()
-                    DispatchQueue.main.async {
-                        if strongSelf.users.count > 0 {
-                            strongSelf.collectionView.reloadData()
-                        } else {
-                            strongSelf.showJHTAlerttOkayWithIcon(message: "No users\nTry to search other name")
-                        }
-                    }
-                }
-                break
-            default:
-                break
-                
-            }
+    private func dismissHud() {
+        DispatchQueue.main.async {
+            SVProgressHUD.dismiss()
         }
     }
     
-    func getFollowfollowersCount(account: String) {
-        AppServerRequests.getFollowersCount(account: account) {
+    fileprivate func getLookupAccounts(name: String) {
+        
+        guard ReachabilityManager.shared.internetIsUp else { return }
+        
+        SVProgressHUD.show()
+        
+        guard let urlString = String(format: ServerUrls.getLookupAccounts, name).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            let url = URL(string: urlString) else { return }
+        
+        URLSession.shared.dataTask(with: url) { (data, response, error) in
+            
+            if let error = error {
+                
+                self.dismissHud()
+                
+                print("fetchAircraftError: ", error.localizedDescription)
+                return
+            }
+            self.dismissHud()
+            guard let data = data else { return }
+            
+            guard let nameArray = self.getArrayFrom(data: data) else { return }
+            
+            self.lookupUsers.removeAll()
+            
+            for name in nameArray {
+                
+                self.sendRepliesCount += 1
+                self.getUserInfo(name: name)
+                
+            }
+            
+        }.resume()
+    }
+    
+    private func getArrayFrom(data: Data) -> [String]? {
+        guard let dataString = String(data: data, encoding: .utf8) else { return nil }
+        
+        let responseStr = String(describing: dataString.filter { !"[]\"".contains($0) })
+        let array = responseStr.components(separatedBy: ",")
+        return array
+    }
+    
+    fileprivate func getUserInfo(name: String) {
+        self.recievedRepliesCount += 1
+        AppServerRequests.fetchUserBaseInformation(username: name){
             [weak self] (r) in
+            guard let strongSelf = self else {
+                SVProgressHUD.dismiss()
+                return }
             
-            SVProgressHUD.dismiss()
-            
-            guard let strongSelf = self else { return }
             switch r {
             case .success (let d):
-                if let data = d as? FollowersFollowingData {
-                    strongSelf.users[0].followerCount = data.followerCount
-                    strongSelf.users[0].followingCount = data.followingCount
+                if let data = d as? Array<UserInfoData> {
                     
-                    DispatchQueue.main.async {
-                        strongSelf.collectionView.reloadData()
+                    if data.count > 0 {
+                        let user = LookupUser(name: name, userInfoData: data[0])
+                        strongSelf.lookupUsers.append(user)
+                    }
+                    
+                    if strongSelf.sendRepliesCount == strongSelf.recievedRepliesCount {
+                        strongSelf.sendRepliesCount = 0
+                        strongSelf.recievedRepliesCount = 0
+                        DispatchQueue.main.async {
+                            SVProgressHUD.dismiss()
+                            strongSelf.collectionView.reloadData()
+                        }
                     }
                 }
                 break
@@ -152,13 +180,13 @@ extension UserSearchController {
 extension UserSearchController: UICollectionViewDataSource, UICollectionViewDelegate , UICollectionViewDelegateFlowLayout{
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return users.count
+        return lookupUsers.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! SearchUserCell
         
-        cell.user = users[indexPath.item]
+        cell.user = lookupUsers[indexPath.item].userInfoData
         
         return cell
     }
@@ -168,7 +196,7 @@ extension UserSearchController: UICollectionViewDataSource, UICollectionViewDele
         searchBar.isHidden = true
         searchBar.resignFirstResponder()
         
-        let user = users[indexPath.item]
+        let user = lookupUsers[indexPath.item].userInfoData
         
         let profileController = ProfileController()
         profileController.profileName = user.name
@@ -200,16 +228,6 @@ extension UserSearchController: UICollectionViewDataSource, UICollectionViewDele
 
 extension UserSearchController: UISearchBarDelegate{
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        
-//        if searchText.isEmpty {
-//            filteredUsers = users
-//        } else {
-//            filteredUsers = users.filter { (user) -> Bool in
-//                return user.username.lowercased().contains(searchText.lowercased())
-//            }
-//        }
-        
-//        collectionView?.reloadData()
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -220,7 +238,8 @@ extension UserSearchController: UISearchBarDelegate{
         
         guard let searchName = searchBar.text else { return }
         
-        self.getUserInfo(name: searchName)
+//        self.getUserInfo(name: searchName)
+        self.getLookupAccounts(name: searchName)
         
     }
 }

@@ -9,6 +9,10 @@
 import Foundation
 
 enum AlertMessages: String {
+    case somethingWrong = "Something went wrong!\nTry again later"
+    case oldVersion = "It seems you have got an old version\nPlease update your app"
+    case invalidPermission = "You are not allowed to edit profile."
+    
     case defaultTitle = "Sorry"
     case defaultButtontitle = "Retry"
     

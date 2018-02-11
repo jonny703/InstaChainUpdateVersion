@@ -9,6 +9,8 @@
 import UIKit
 import SVProgressHUD
 import SDWebImage
+import ImagePicker
+import CLImageEditor
 import ObjectMapper
 
 class ProfileController: UIViewController {
@@ -25,7 +27,7 @@ class ProfileController: UIViewController {
     var followers = [FollowersData]()
     var following = [FollowersData]()
     
-    var selectedMenuBarIndexPath: IndexPath = IndexPath(item: 0, section: 0)
+    var selectedMenuBarIndexPath: Int = 0
     
     var isLookOtherProfile = false
     var profileName: String?
@@ -102,7 +104,7 @@ class ProfileController: UIViewController {
         segement.tintColor = StyleGuideManager.realyfeDefaultGreenColor
         segement.setTitleTextAttributes([NSAttributedStringKey.font: UIFont.systemFont(ofSize: 17)], for: .normal)
         segement.selectedSegmentIndex = 0
-        segement.addTarget(self, action: #selector(handleSegmentControl), for: .valueChanged)
+        segement.addTarget(self, action: #selector(handleSegmentControl(sender:)), for: .valueChanged)
         return segement
     }()
     
@@ -118,6 +120,19 @@ class ProfileController: UIViewController {
         cv.delegate = self
         return cv
         
+    }()
+    
+    lazy var shottingButton: UIButton = {
+        
+        let button = UIButton(type: .system)
+        let image = UIImage(named: AssetName.shottingIcon.rawValue)
+        button.tintColor = .white
+        button.backgroundColor = StyleGuideManager.realyfeDefaultGreenColor
+        button.layer.cornerRadius = 50 / 2
+        button.layer.masksToBounds = true
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(handleShotting), for: .touchUpInside)
+        return button
     }()
     
     override func viewDidLoad() {
@@ -145,10 +160,83 @@ class ProfileController: UIViewController {
     
 }
 
+//MARK: handleShotting
 extension ProfileController {
     
-    @objc fileprivate func handleSegmentControl() {
+    fileprivate func checkPrivateKeyType() -> Bool {
         
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return false }
+        
+        if privateKeyType == PrivateKeyType.memo.rawValue {
+            return false
+        } else {
+            return true
+        }
+    }
+    
+    @objc fileprivate func handleShotting() {
+        
+        guard checkPrivateKeyType() else {
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
+        
+        let imagePicker = ImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.imageLimit = 1
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+}
+
+extension ProfileController: ImagePickerDelegate {
+    func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
+        
+    }
+    
+    func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
+        var selectImage: UIImage = UIImage()
+        for image in images{
+            selectImage = image
+            //print(self.uploadImageToServer(data: self.convertImageToBase64(image: image)))
+        }
+        dismiss(animated: true, completion: nil)
+        self.presentImageEditor(with: selectImage)
+    }
+    
+    func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
+        
+    }
+    
+    // Edit the selected image
+    func presentImageEditor(with image: UIImage) {
+        let editor = CLImageEditor(image: image)
+        editor?.delegate = self
+        present(editor! , animated: false) {() -> Void in }
+    }
+    
+    
+}
+
+extension ProfileController: CLImageEditorDelegate{
+    
+    func imageEditor(_ editor: CLImageEditor!, didFinishEditingWith image: UIImage!) {
+        
+        dismiss(animated: true) {
+            let newDiscussionConroller = NewDiscussionController()
+            newDiscussionConroller.postImage = image
+            let navConroller = UINavigationController(rootViewController: newDiscussionConroller)
+            self.present(navConroller, animated: true, completion: nil)
+        }
+    }
+    
+}
+
+extension ProfileController {
+    
+    @objc fileprivate func handleSegmentControl(sender: UISegmentedControl) {
+        self.scrollToMenuIndex(menuIndex: sender.selectedSegmentIndex)
     }
 }
 
@@ -203,9 +291,11 @@ extension ProfileController {
         let followers = "Followers \(profileData.followerCount)"
         let followings = "Following \(profileData.followingCount)"
         
-        self.menuBar.titleNames = [postCount, followers, followings]
-        self.menuBar.collectionView.reloadData()
-        menuBar.collectionView.selectItem(at: selectedMenuBarIndexPath, animated: false, scrollPosition: [])
+        self.segmentControl.removeAllSegments()
+        self.segmentControl.insertSegment(withTitle: postCount, at: 0, animated: false)
+        self.segmentControl.insertSegment(withTitle: followers, at: 1, animated: false)
+        self.segmentControl.insertSegment(withTitle: followings, at: 2, animated: false)
+        self.segmentControl.selectedSegmentIndex = self.selectedMenuBarIndexPath
     }
     
     @objc func getfolloweingsCount() {
@@ -282,7 +372,6 @@ extension ProfileController {
             
         }
     }
-    
 }
 
 //MARK: handle profile data
@@ -299,10 +388,13 @@ extension ProfileController {
         let postCount = "Posts \(profileData.postCount)"
         let followers = "Followers \(profileData.followerCount)"
         let followings = "Following \(profileData.followingCount)"
-        self.menuBar.titleNames = [postCount, followers, followings]
-        self.menuBar.collectionView.reloadData()
-        let indexPath = IndexPath(item: 0, section: 0)
-        menuBar.collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+        
+        self.segmentControl.removeAllSegments()
+        self.segmentControl.insertSegment(withTitle: postCount, at: 0, animated: false)
+        self.segmentControl.insertSegment(withTitle: followers, at: 1, animated: false)
+        self.segmentControl.insertSegment(withTitle: followings, at: 2, animated: false)
+        self.segmentControl.selectedSegmentIndex = self.selectedMenuBarIndexPath
+        
         //check follow status
         
         if let followerName = self.data?.name {
@@ -320,8 +412,6 @@ extension ProfileController {
                 followButton.setImage(image, for: .normal)
             }
         }
-        
-        
         
         guard let profileImageUrlString = profileData.jsonMetadata?.profile?.profileImage, let profileImageUrl = URL(string: profileImageUrlString) else { return }
         
@@ -449,8 +539,8 @@ extension ProfileController {
 extension ProfileController {
     
     func scrollToMenuIndex(menuIndex: Int) {
+        self.selectedMenuBarIndexPath = menuIndex
         let indexPath = IndexPath(item: menuIndex, section: 0)
-        selectedMenuBarIndexPath = indexPath
         collectionView.scrollToItem(at: indexPath, at: [], animated: true)
     }
     
@@ -463,9 +553,8 @@ extension ProfileController {
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         
         let index = targetContentOffset.pointee.x / view.frame.width
-        let indexPath = IndexPath(item: Int(index), section: 0)
-        selectedMenuBarIndexPath = indexPath
-        menuBar.collectionView.selectItem(at: indexPath, animated: true, scrollPosition: [])
+        self.selectedMenuBarIndexPath = Int(index)
+        self.segmentControl.selectedSegmentIndex = Int(index)
         
     }
 }
@@ -561,6 +650,14 @@ extension ProfileController {
         setupNavBar()
         setupMenuBar()
         setupCollectionView()
+        setupShottingButton()
+    }
+    
+    private func setupShottingButton() {
+        
+        view.addSubview(shottingButton)
+        
+        _ = shottingButton.anchor(nil, left: nil, bottom: view.bottomAnchor, right: view.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 30, rightConstant: 30, widthConstant: 50, heightConstant: 50)
     }
     
     private func setupNavBar() {
@@ -607,16 +704,14 @@ extension ProfileController {
     }
     
     private func setupMenuBar() {
-        view.addSubview(menuBar)
-        _ = menuBar.anchor(profileView.bottomAnchor, left: view.leftAnchor, bottom: nil, right: view.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 50)
         
-//        view.addSubview(segmentControl)
-//        _ = segmentControl.anchor(profileView.bottomAnchor, left: view.leftAnchor, bottom: nil, right: view.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 50)
+        view.addSubview(segmentControl)
+        _ = segmentControl.anchor(profileView.bottomAnchor, left: view.leftAnchor, bottom: nil, right: view.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 50)
     }
     
     private func setupCollectionView() {
         view.addSubview(collectionView)
-        _ = collectionView.anchor(menuBar.bottomAnchor, left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 0)
+        _ = collectionView.anchor(segmentControl.bottomAnchor, left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, topConstant: 1, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 0)
         
         collectionView.register(ProfilePostCell.self, forCellWithReuseIdentifier: postCellId)
         collectionView.register(ProfileFollowerCell.self, forCellWithReuseIdentifier: userFollowersCellId)

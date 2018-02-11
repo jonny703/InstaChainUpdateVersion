@@ -164,6 +164,8 @@ extension NewDiscussionController {
     
     @objc fileprivate func handlePost() {
         
+        view.endEditing(true)
+        
         if !(checkInvalid()) {
             return
         }
@@ -181,7 +183,36 @@ extension NewDiscussionController {
     }
 }
 
-
+extension NewDiscussionController {
+    
+    fileprivate func checkPrivateKeyType() -> Bool {
+        
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return false }
+        
+        if privateKeyType == PrivateKeyType.memo.rawValue {
+            return false
+        } else {
+            return true
+        }
+    }
+    
+    fileprivate func getPrivateKey() -> String? {
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return nil }
+        if privateKeyType == PrivateKeyType.owner.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.owner else { return nil }
+            return key
+        } else if privateKeyType == PrivateKeyType.posting.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.posting else { return nil }
+            return key
+        } else if privateKeyType == PrivateKeyType.active.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.active else { return nil }
+            return key
+        }
+        
+        return nil
+    }
+    
+}
 
 extension NewDiscussionController {
     
@@ -204,7 +235,6 @@ extension NewDiscussionController {
             SVProgressHUD.dismiss()
         }) { (result, error) in
             if let url = result?.url{
-//                self.tagStrings.append(self.permlink.text!)
                 self.commnentOnPost(title: self.titleTextField.text!, body: (self.postTextView.text)!, url: [url], author: (self.data?.name)!, tag: self.tagStrings, wif: (CurrentSession.getI().localData.privWif?.active)!, parentPermlink: self.tagStrings[0])
             } else {
                 SVProgressHUD.dismiss()
@@ -216,6 +246,17 @@ extension NewDiscussionController {
     //MARK:- For comment on Post
     func commnentOnPost(title: String, body: String, url: [String], author: String, tag: [String], wif: String, parentPermlink: String) {
         
+        guard checkPrivateKeyType() else {
+            SVProgressHUD.dismiss()
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
+        guard let key = self.getPrivateKey() else {
+            SVProgressHUD.dismiss()
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return }
+        
         let headers = [
             "content-type": "application/json",
             ]
@@ -223,7 +264,7 @@ extension NewDiscussionController {
             "parent_author": "",
             "parent_permlink": parentPermlink,
             "author": author,
-            "permlink": title.split(separator: " ").joined(separator: "-").lowercased(),
+            "permlink": getRandomString(length: 15).split(separator: " ").joined(separator: "-").lowercased(),
             "title": title,
             "body": body,
             "json_metadata": [
@@ -234,7 +275,7 @@ extension NewDiscussionController {
                 "format": "html",
                 "app": "instachain_mobile/0.1"
             ],
-            "wif": wif
+            "wif": key
             ] as [String : Any]
         
         do {
@@ -259,21 +300,13 @@ extension NewDiscussionController {
                         self.showJHTAlerttOkayWithIcon(message: "Something went wrong!\nTry again later")
                         self.postButton.isEnabled = true
                     }
-                    print(error)
+                    print(error!)
                 } else {
                     _ = response as? HTTPURLResponse
                     let responseString = String(data: data!, encoding: .utf8)
-                    
-                    let responseStr = String(describing: responseString?.filter { !"\\".contains($0) })
                     print("responseString = \(String(describing: responseString))")
-                    print("responseStr = \(String(describing: responseStr))")
                     
                     let commentsData = Mapper<CommentResponseData>().map(JSONString: responseString!)
-                    
-                    print(commentsData?.blockNum)
-                    
-                    print(commentsData?.blockNum)
-                    print(commentsData?.operationData)
                     
                     if let operations = commentsData?.operationData as? Array<Any> {
                         for items in operations {
@@ -295,9 +328,19 @@ extension NewDiscussionController {
                         self.homeController?.fetchHomeFeed()
                         
                     } else {
+                        
+                        
+                        
                         DispatchQueue.main.async {
                             SVProgressHUD.dismiss()
-                            self.showJHTAlerttOkayWithIcon(message: "Something went wrong!\nTry again later")
+                            
+                            if responseString?.range(of: "You may only post once every 5 minutes") != nil {
+                                self.showJHTAlerttOkayWithIcon(message: "You may only post once every 5 minutes.")
+                            } else {
+                                self.showJHTAlerttOkayWithIcon(message: "Something went wrong!\nTry again later")
+                            }
+                            
+                            
                             self.postButton.isEnabled = true
                         }
                     }

@@ -26,16 +26,19 @@ class FollowersUserCell: BaseCollectionViewCell {
             
             if type == .follower {
                 if let followerName = follower.follower {
-                    userNameLabel.text = followerName
+//                    userNameLabel.text = followerName
                     userTagLabel.text = "@" + followerName
                 }
             } else {
                 if let followerName = follower.following {
-                    userNameLabel.text = followerName
+//                    userNameLabel.text = followerName
                     userTagLabel.text = "@" + followerName
                 }
             }
             
+            if let username = follower.authorDisplayName {
+                userNameLabel.text = username
+            }
             
             guard let imageUrlString = follower.authorProfileImage, let imageUrl = URL(string: imageUrlString) else { return }
             userImageView.sd_addActivityIndicator()

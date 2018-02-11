@@ -34,6 +34,7 @@
 		0701B8472026E9CE0001357C /* GlobalFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0701B8462026E9CE0001357C /* GlobalFunctions.swift */; };
 		0701B84920270FB50001357C /* DiscussionDetailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0701B84820270FB50001357C /* DiscussionDetailController.swift */; };
 		0701B84B2027136B0001357C /* NewDiscussionPostCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0701B84A2027136B0001357C /* NewDiscussionPostCell.swift */; };
+		071B3158202F68EB00CBBA53 /* LoginResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071B3157202F68EB00CBBA53 /* LoginResponse.swift */; };
 		074DFB68202738120063EDBB /* CommentInputTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074DFB67202738120063EDBB /* CommentInputTextView.swift */; };
 		074DFB6A202738510063EDBB /* CommentInputAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074DFB69202738510063EDBB /* CommentInputAccessoryView.swift */; };
 		074DFB6C20273B350063EDBB /* CommentsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 074DFB6B20273B350063EDBB /* CommentsController.swift */; };
@@ -84,6 +85,7 @@
 		079A52642020D21B000C051B /* login button.png in Resources */ = {isa = PBXBuildFile; fileRef = 079A525E2020D21B000C051B /* login button.png */; };
 		07FBE974202939A300E06474 /* CommentReplyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBE973202939A300E06474 /* CommentReplyCell.swift */; };
 		07FBE9762029B58B00E06474 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBE9752029B58B00E06474 /* Comment.swift */; };
+		07FBE98A202B446C00E06474 /* LookupUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBE989202B446C00E06474 /* LookupUser.swift */; };
 		9B9C9CE56F0CE3CA6C6B5497 /* Pods_InstaChain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DDB29A69D342EDBAA5C379A /* Pods_InstaChain.framework */; };
 /* End PBXBuildFile section */
 
@@ -115,6 +117,7 @@
 		0701B8462026E9CE0001357C /* GlobalFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalFunctions.swift; sourceTree = "<group>"; };
 		0701B84820270FB50001357C /* DiscussionDetailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscussionDetailController.swift; sourceTree = "<group>"; };
 		0701B84A2027136B0001357C /* NewDiscussionPostCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewDiscussionPostCell.swift; sourceTree = "<group>"; };
+		071B3157202F68EB00CBBA53 /* LoginResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginResponse.swift; sourceTree = "<group>"; };
 		074DFB67202738120063EDBB /* CommentInputTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentInputTextView.swift; sourceTree = "<group>"; };
 		074DFB69202738510063EDBB /* CommentInputAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentInputAccessoryView.swift; sourceTree = "<group>"; };
 		074DFB6B20273B350063EDBB /* CommentsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsController.swift; sourceTree = "<group>"; };
@@ -167,6 +170,7 @@
 		079A525E2020D21B000C051B /* login button.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "login button.png"; sourceTree = "<group>"; };
 		07FBE973202939A300E06474 /* CommentReplyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentReplyCell.swift; sourceTree = "<group>"; };
 		07FBE9752029B58B00E06474 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		07FBE989202B446C00E06474 /* LookupUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookupUser.swift; sourceTree = "<group>"; };
 		0DDB29A69D342EDBAA5C379A /* Pods_InstaChain.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InstaChain.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3778AB2463DA5B6C583ECB03 /* Pods-InstaChain.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InstaChain.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InstaChain/Pods-InstaChain.debug.xcconfig"; sourceTree = "<group>"; };
 		69D106AE66AD7FF146684E18 /* Pods-InstaChain.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InstaChain.release.xcconfig"; path = "Pods/Target Support Files/Pods-InstaChain/Pods-InstaChain.release.xcconfig"; sourceTree = "<group>"; };
@@ -405,6 +409,8 @@
 				0773F4D52020F171005874B9 /* BaseModels.swift */,
 				0773F4DE2020F26F005874B9 /* RawData.swift */,
 				07FBE9752029B58B00E06474 /* Comment.swift */,
+				07FBE989202B446C00E06474 /* LookupUser.swift */,
+				071B3157202F68EB00CBBA53 /* LoginResponse.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -636,6 +642,7 @@
 			files = (
 				0773F4EB2020F5DB005874B9 /* AppServerRequests.swift in Sources */,
 				0773F4C32020DCCA005874B9 /* Extension+UserDefault.swift in Sources */,
+				071B3158202F68EB00CBBA53 /* LoginResponse.swift in Sources */,
 				0701B84B2027136B0001357C /* NewDiscussionPostCell.swift in Sources */,
 				0701B8472026E9CE0001357C /* GlobalFunctions.swift in Sources */,
 				0773F4CB2020DCDB005874B9 /* Alerts.swift in Sources */,
@@ -654,6 +661,7 @@
 				0701B81B202167920001357C /* FollowersController.swift in Sources */,
 				074DFB6A202738510063EDBB /* CommentInputAccessoryView.swift in Sources */,
 				0773F4C22020DCCA005874B9 /* Extension+UIImageView.swift in Sources */,
+				07FBE98A202B446C00E06474 /* LookupUser.swift in Sources */,
 				0701B83C202430250001357C /* EditProfileController.swift in Sources */,
 				0773F4CD2020E3DA005874B9 /* TopplessTextField.swift in Sources */,
 				079A52412020CD23000C051B /* AppDelegate.swift in Sources */,

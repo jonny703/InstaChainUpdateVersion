@@ -83,6 +83,9 @@ class HomeController: UIViewController {
         
         fetchHomeFeed()
         
+        let title = "test test"
+        let randomTitle = title.split(separator: " ").joined(separator: "-").lowercased()
+        print("randomTitle", randomTitle)
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -99,6 +102,13 @@ class HomeController: UIViewController {
         present(loginController, animated: true, completion: {
         })
         
+        
+    }
+}
+
+extension HomeController {
+    
+    func fetchFeed(withTag tag: String) {
         
     }
 }
@@ -134,7 +144,25 @@ extension HomeController {
 //MARK: handleShotting
 extension HomeController {
     
+    fileprivate func checkPrivateKeyType() -> Bool {
+        
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return false }
+        
+        if privateKeyType == PrivateKeyType.memo.rawValue {
+            return false
+        } else {
+            return true
+        }
+    }
+    
     @objc fileprivate func handleShotting() {
+        
+        guard checkPrivateKeyType() else {
+            self.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
+        
         let imagePicker = ImagePickerController()
         imagePicker.delegate = self
         imagePicker.imageLimit = 1
@@ -274,6 +302,7 @@ extension HomeController {
                 }
                 break
             default:
+                SVProgressHUD.dismiss()
                 break
                 
             }
@@ -449,7 +478,7 @@ extension HomeController {
     private func setupBackground() {
         view.backgroundColor = DarkModeManager.getViewBackgroundColor()
         
-        navigationItem.title = "Dashboard"
+        navigationItem.title = "Home"
     }
     
 }

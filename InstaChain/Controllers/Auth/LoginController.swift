@@ -13,10 +13,22 @@ import SkyFloatingLabelTextField
 import ObjectMapper
 import SideMenuController
 
+enum AuthPublicKeyType {
+    
+    case activeKey
+    case ownerKey
+    case postingKey
+}
+
+
 class LoginController: UIViewController {
+    
+    var authPublicKeyType: AuthPublicKeyType = .activeKey
     
     var userInfo: [UserInfoData] = [UserInfoData()]
     var keyData : WifData? = WifData()
+    var password: String?
+    
     
     var isRemember = false
     
@@ -94,7 +106,7 @@ class LoginController: UIViewController {
     lazy var qrScanButton: UIButton = {
        
         let button = UIButton(type: .system)
-        let image = UIImage(named: AssetName.qrscanIcon.rawValue)
+        let image = UIImage(named: AssetName.qrCode.rawValue)
         button.setImage(image, for: .normal)
         button.tintColor = DarkModeManager.getLoginPageTintColor()
         button.addTarget(self, action: #selector(handleQRScan), for: .touchUpInside)
@@ -163,6 +175,17 @@ extension LoginController {
 
 extension LoginController {
     
+    
+    fileprivate func getPrivateKey() -> String? {
+        
+        guard let privateKey = self.password, privateKey.count > 0 else {
+            return nil
+        }
+        
+        
+        return privateKey
+    }
+    
     @objc fileprivate func handleShowSignUp() {
     }
     
@@ -173,7 +196,7 @@ extension LoginController {
         }
         
         guard let username = usernameTextField.text, let password = passwordTextField.text else { return }
-        
+        self.password = password
         self.getUserBaseInfomation(username: username.doTrimming(), password: password.doTrimming())
     }
     
@@ -184,7 +207,9 @@ extension LoginController {
         
         AppServerRequests.fetchUserBaseInformation(username: username.doTrimming()) {
             [weak self] (r) in
-            guard let strongSelf = self else { return }
+            guard let strongSelf = self else {
+                SVProgressHUD.dismiss()
+                return }
             switch r {
             case .success (let d):
                 if let data = d as? [UserInfoData] {
@@ -200,16 +225,22 @@ extension LoginController {
                     localData.pubWif?.posting = strongSelf.userInfo[0].posting.key[0]
                     localData.pubWif?.memo = strongSelf.userInfo[0].memoKey
                     CurrentSession.getI().saveData()
-                    strongSelf.getPrivWif(username: username, password: password, count: 0)
+                    
+//                    let activeKey = strongSelf.userInfo[0].active.key[0]
+//                    guard let privateKey = strongSelf.getPrivateKey() else { return }
+//                    strongSelf.authenticateUser(pubWif: activeKey, privWif: privateKey, count: 0)
+                    strongSelf.handleLoginWith(username: username, password: password)
                     
                 }else{
                     
                     DispatchQueue.main.async {
+                        SVProgressHUD.dismiss()
                         strongSelf.showJHTAlerttOkayWithIcon(message: "Enter Correct Username")
                     }
                 }
                 break
             default:
+                SVProgressHUD.dismiss()
                 break
                 
             }
@@ -225,6 +256,8 @@ extension LoginController {
         
         AppServerRequests.login(userName: username, password: password, role: role, completionHandler: { (data, response, error) -> Void in
             if (error != nil) {
+                SVProgressHUD.dismiss()
+                self.showJHTAlerttOkayWithIcon(message: AlertMessages.somethingWrong.rawValue)
                 print(error ?? "")
             } else {
                 _ = response as? HTTPURLResponse
@@ -263,6 +296,103 @@ extension LoginController {
         return role!
     }
     
+    func handleLoginWith(username: String, password: String) {
+        let headers = [
+            "content-type": "application/json",
+            ]
+        let parameters = [
+            "name": username,
+            "password":password,
+            ] as [String : Any]
+        guard let urlStr = ServerUrls.newLoginUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            let url = URL(string: urlStr) else {
+                return
+        }
+        var request = URLRequest(url: url)
+        do {
+            let postData = try JSONSerialization.data(withJSONObject: parameters, options: [])
+            request.httpBody = postData
+        } catch let jsonError {
+            print("Error serializing ", jsonError)
+        }
+        
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = headers
+        
+        let session = URLSession.shared
+        SVProgressHUD.show()
+        
+        let dataTask = session.dataTask(with: request) { (data, response, error) in
+            if let error = error {
+                self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                print("Error for publish: ", error.localizedDescription)
+                return
+            }
+            guard let data = data else {
+                self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                return
+            }
+            
+            let jsonString = String(data: data, encoding: .utf8)
+            print("json: ", jsonString ?? "")
+            
+            do {
+                
+                let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
+                
+                print(loginResponse.result ?? "empty")
+                print(loginResponse.key_type ?? "empty")
+                print(loginResponse.priv_wif ?? "empty")
+                
+                guard let result = loginResponse.result else {
+                    self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                    return }
+                
+                if result {
+                    
+                    guard let keyType = loginResponse.key_type else { return }
+                    guard let privKey = loginResponse.priv_wif else { return }
+                    UserDefaults.standard.setPrivateKeyType(keyType)
+                    
+                    if keyType == PrivateKeyType.owner.rawValue {
+                        CurrentSession.getI().localData.privWif?.owner = privKey
+                    } else if keyType == PrivateKeyType.active.rawValue {
+                        CurrentSession.getI().localData.privWif?.active = privKey
+                    } else if keyType == PrivateKeyType.posting.rawValue {
+                        CurrentSession.getI().localData.privWif?.posting = privKey
+                    } else if keyType == PrivateKeyType.memo.rawValue {
+                        CurrentSession.getI().localData.privWif?.memo = privKey
+                    } else {
+                        self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                        return
+                    }
+                    
+                    CurrentSession.getI().saveData()
+                    
+                    self.getFollowfollowersCount(account: username)
+                } else {
+                    self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                }
+                
+            } catch let jsonErr {
+                print("Error serializing error: ", jsonErr)
+                self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                return
+            }
+        }
+        
+        dataTask.resume()
+        
+        
+    }
+    
+    private func showErrorMessage(message: String) {
+        DispatchQueue.main.async {
+            SVProgressHUD.dismiss()
+            self.showJHTAlerttOkayWithIcon(message: message)
+        }
+    }
+    
     //4 > authenticate user by
     func authenticateUser(pubWif: String, privWif: String, count: Int) {
         
@@ -290,29 +420,59 @@ extension LoginController {
             let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
                 if (error != nil) {
                     print(error ?? "")
+                    DispatchQueue.main.async {
+                        SVProgressHUD.dismiss()
+                        self.showJHTAlerttOkayWithIcon(message: AlertMessages.somethingWrong.rawValue)
+                    }
                 } else {
                     _ = response as? HTTPURLResponse
                     let responseString = String(data: data!, encoding: .utf8)
-                    print(responseString ?? "")
+                    print("test login with ", responseString ?? "")
                     let key = Mapper<WifKeyData>().map(JSONString: responseString!)
                     print(key?.result ?? "")
                     if let item = key?.result as? Bool {
                         print(item)
                         if item {
                             
-                            CurrentSession.getI().localData.privWif?.active = privWif
-                            CurrentSession.getI().saveData()
+//                            CurrentSession.getI().localData.privWif?.active = privWif
+//                            CurrentSession.getI().saveData()
                             
                             DispatchQueue.main.async {
                                 self.getFollowfollowersCount(account: self.usernameTextField.text!)
                             }
                             
                             
-                        }else {
+                        } else {
+                            
+                            if self.authPublicKeyType == .activeKey {
+                                self.authPublicKeyType = .postingKey
+                                let postingKey = self.userInfo[0].posting.key[0]
+                                guard let privateKey = self.getPrivateKey() else { return }
+                                self.authenticateUser(pubWif: postingKey, privWif: privateKey, count: 0)
+                                return
+                            } else if self.authPublicKeyType == .postingKey {
+                                self.authPublicKeyType = .activeKey
+                                let ownerKey = self.userInfo[0].active.key[0]
+                                guard let privateKey = self.getPrivateKey() else { return }
+                                self.authenticateUser(pubWif: ownerKey, privWif: privateKey, count: 0)
+                                return
+                            }
+                            
                             DispatchQueue.main.async {
+                                SVProgressHUD.dismiss()
                                 self.showJHTAlerttOkayWithIcon(message: Constants.wrongPassword)
                             }
                             
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            SVProgressHUD.dismiss()
+                            
+                            if responseString?.range(of: "Expected version") != nil {
+                                self.showJHTAlerttOkayWithIcon(message: AlertMessages.oldVersion.rawValue)
+                            } else {
+                                self.showJHTAlerttOkayWithIcon(message: AlertMessages.somethingWrong.rawValue)
+                            }
                         }
                     }
                 }

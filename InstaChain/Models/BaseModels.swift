@@ -1135,12 +1135,14 @@ class FollowersData: BaseData {
     var following: String?
     var what: [String?] = []
     var authorProfileImage: String?
+    var authorDisplayName: String?
     
     override func mapping(map: Map) {
         follower <- map["follower"]
         following <- map["following"]
         what <- map["what"]
         authorProfileImage <- map["author_profile_image"]
+        authorDisplayName <- map["author_display_name"]
     }
 }
 
