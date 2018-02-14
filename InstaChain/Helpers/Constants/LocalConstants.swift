@@ -24,6 +24,8 @@ let NAVI_HEIGHT: CGFloat = 64.0
 let PRIVACY_URL_STRING = "http://instachain.io/privacy.html"
 let TOS_URL_STRING = "https://steemit.com/tos.html"
 
+let PRIVATE_MESSAGE_AMOUNT = "0.001 INSTA"
+
 //common constants for all devices based on iphone 6s
 let GAP100 = DEVICE_WIDTH / 3.75
 let GAP90  = GAP100 * 0.9

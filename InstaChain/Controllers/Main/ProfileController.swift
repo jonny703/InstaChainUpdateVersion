@@ -206,7 +206,7 @@ extension ProfileController: ImagePickerDelegate {
     }
     
     func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-        
+        imagePicker.dismiss(animated: true, completion: nil)
     }
     
     // Edit the selected image

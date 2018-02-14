@@ -317,7 +317,7 @@ extension EditProfileController: ImagePickerDelegate{
     }
     
     func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-        
+        imagePicker.dismiss(animated: true, completion: nil)
     }
     
     

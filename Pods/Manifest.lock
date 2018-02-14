@@ -35,6 +35,7 @@ PODS:
   - ImagePicker (2.1.1)
   - IQKeyboardManager (5.0.6)
   - JHTAlertController (0.2.4)
+  - KRPullLoader (1.1.0)
   - libwebp (0.6.0):
     - libwebp/core (= 0.6.0)
     - libwebp/dec (= 0.6.0)
@@ -88,6 +89,7 @@ DEPENDENCIES:
   - ImagePicker (~> 2.1.1)
   - IQKeyboardManager
   - JHTAlertController
+  - KRPullLoader
   - Lightbox (~> 1.1)
   - MTBBarcodeScanner
   - ObjectMapper (~> 2.2)
@@ -124,6 +126,7 @@ SPEC CHECKSUMS:
   ImagePicker: fe4c699abb56ff03994fa98d8b02e3883ee118be
   IQKeyboardManager: 077b7f691dfa9d69db9cff66f2bed68ebfc02d9b
   JHTAlertController: 8999fdf41c60a3d6698a3415ff1448f4ce4680e5
+  KRPullLoader: 8209e472b2f7f67b22e809f0b614ca1043a8239e
   libwebp: 1d5a07c2eb97f9c31bd5f154bb82efc0ea67c6a2
   Lightbox: 1b53bd364077474fcb217a22266c95a72fc00faa
   MTBBarcodeScanner: 3ce0f1b0085ef00c726ded663c490a63b29c9aa5
@@ -137,6 +140,6 @@ SPEC CHECKSUMS:
   SVProgressHUD: 59b2d3dabacbd051576d21d32293ca7228dc18b0
   TOPasscodeViewController: 56df8490d9b5711ca1c1f9de7d8d119022f6bbe3
 
-PODFILE CHECKSUM: aca0511cc42bd92249444d4a4dad0eecd8001f0b
+PODFILE CHECKSUM: c5d8fcb45c46b124d11bc65e1f674baf69a5b27b
 
 COCOAPODS: 1.3.1

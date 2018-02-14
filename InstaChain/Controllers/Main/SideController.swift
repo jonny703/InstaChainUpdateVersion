@@ -104,6 +104,7 @@ class SideController: UIViewController {
     }
     
     @objc func reloadTableView() {
+        user = CurrentSession.getI().localData.userBaseInfo
         tableView.reloadData()
     }
     
@@ -132,7 +133,7 @@ extension SideController: ImagePickerDelegate{
     }
     
     func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-        
+        imagePicker.dismiss(animated: true, completion: nil)
     }
     
     
@@ -365,7 +366,7 @@ extension SideController: UITableViewDelegate, UITableViewDataSource {
             randomController.view.backgroundColor = DarkModeManager.getViewBackgroundColor()
             randomController.navigationItem.title = titles[indexPath.row][1]
             navController = UINavigationController(rootViewController: randomController)
-//            navController?.navigationBar.barTintColor = StyleGuideManager.realyfeDefaultGreenColor
+            //            navController?.navigationBar.barTintColor = StyleGuideManager.realyfeDefaultGreenColor
         }
         
         guard let embedController = navController else { return }
@@ -470,3 +471,4 @@ extension SideController {
     }
     
 }
+

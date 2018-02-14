@@ -153,7 +153,7 @@ class HomePostCell: BaseCollectionViewCell {
         setupOtherStuffView()
     }
     
-     @objc func handleZoomTap(tapGesture: UITapGestureRecognizer) {
+    @objc func handleZoomTap(tapGesture: UITapGestureRecognizer) {
         
         if let imageView = tapGesture.view as? UIImageView {
             
@@ -179,14 +179,47 @@ class HomePostCell: BaseCollectionViewCell {
         homeController?.handleGoingCommentController(discussion: discussion)
     }
     
+    fileprivate func checkPrivateKeyType() -> Bool {
+        
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return false }
+        
+        if privateKeyType == PrivateKeyType.memo.rawValue {
+            return false
+        } else {
+            return true
+        }
+    }
+    
+    fileprivate func getPrivateKey() -> String? {
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return nil }
+        if privateKeyType == PrivateKeyType.owner.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.owner else { return nil }
+            return key
+        } else if privateKeyType == PrivateKeyType.posting.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.posting else { return nil }
+            return key
+        } else if privateKeyType == PrivateKeyType.active.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.active else { return nil }
+            return key
+        }
+        
+        return nil
+    }
+    
     @objc func handleLike() {
+        
+        guard checkPrivateKeyType() else {
+            homeController?.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
         guard let discussion = discussionData else { return }
         
         let author = discussion.author
         let permlink = discussion.permlink
         let weight = isUserLikePost ? 0 : 10000
         
-        guard let wif = CurrentSession.getI().localData.privWif?.active else { return }
+        guard let wif = getPrivateKey() else { return }
         
         self.likesButton.isUserInteractionEnabled = false
         self.giveVoteToPost(author: author, permlink: permlink, weight: weight, wif: wif)
@@ -276,7 +309,7 @@ class HomePostCell: BaseCollectionViewCell {
         for i in 0..<data.count{
             if data[i].voter == CurrentSession.getI().localData.userBaseInfo?.name {
                 
-                if data[i].percent == 0 {
+                if data[i].weight == 0 {
                     self.isUserLikePost = false
                     return false
                 } else {
@@ -358,9 +391,9 @@ extension HomePostCell {
         
         _ = postTimeLabel.anchor(nil, left: nil, bottom: nil, right: rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: GAP100 + GAP10, heightConstant: GAP20)
         postTimeLabel.centerYAnchor.constraint(equalTo: userInfoView.centerYAnchor).isActive = true
-
+        
         _ = userNameLabel.anchor(userImageView.topAnchor, left: userImageView.rightAnchor, bottom: nil, right: postTimeLabel.leftAnchor, topConstant: 0, leftConstant: 20, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: GAP20)
-
+        
         _ = userTagLabel.anchor(nil, left: userNameLabel.leftAnchor, bottom: userImageView.bottomAnchor, right: postTimeLabel.leftAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: GAP20)
         
     }

@@ -30,6 +30,9 @@ class ServerUrls {
     static let discussionByHot = ServerUrls.baseUrl + "get_discussions_by_hot"
     static let discussionByTrending = ServerUrls.baseUrl + "get_discussions_by_trending"
     static let discussionCreatedBy = ServerUrls.baseUrl + "get_discussions_by_created"
-    static let getLookupAccounts = ServerUrls.baseUrl + "lookup_accounts?%@&limit=50"
+    static let getLookupAccounts = ServerUrls.baseUrl + "lookup_accounts?lowerBoundName=%@&limit=50"
+    static let getState = ServerUrls.baseUrl + "get_state?p_path=%@/@%@/%@"
+    static let sendPrivateMessage = ServerUrls.baseUrl + "broadcast/private_message"
+    static let getPrivateMessageHistory = ServerUrls.baseUrl + "auth/chat_history"
 
 }

@@ -240,7 +240,10 @@ extension LoginController {
                 }
                 break
             default:
-                SVProgressHUD.dismiss()
+                DispatchQueue.main.async {
+                    SVProgressHUD.dismiss()
+                    strongSelf.showJHTAlerttOkayWithIcon(message: "Enter Correct Username")
+                }
                 break
                 
             }
@@ -344,6 +347,11 @@ extension LoginController {
                 print(loginResponse.key_type ?? "empty")
                 print(loginResponse.priv_wif ?? "empty")
                 
+                if let error = loginResponse.error {
+                    self.showErrorMessage(message: error)
+                    return
+                }
+                
                 guard let result = loginResponse.result else {
                     self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
                     return }
@@ -352,10 +360,19 @@ extension LoginController {
                     
                     guard let keyType = loginResponse.key_type else { return }
                     guard let privKey = loginResponse.priv_wif else { return }
-                    UserDefaults.standard.setPrivateKeyType(keyType)
+                    
+                    
+                    let userDefaults = UserDefaults.standard
+                    
+                    userDefaults.setPrivateKeyType(keyType)
                     
                     if keyType == PrivateKeyType.owner.rawValue {
+                        guard let memoKey = loginResponse.priv_memo_wif else { return }
                         CurrentSession.getI().localData.privWif?.owner = privKey
+                        
+                        userDefaults.setPrivateMainKey(privKey)
+                        userDefaults.setPrivateMemoKey(memoKey)
+                        
                     } else if keyType == PrivateKeyType.active.rawValue {
                         CurrentSession.getI().localData.privWif?.active = privKey
                     } else if keyType == PrivateKeyType.posting.rawValue {
@@ -371,7 +388,17 @@ extension LoginController {
                     
                     self.getFollowfollowersCount(account: username)
                 } else {
-                    self.showErrorMessage(message: AlertMessages.somethingWrong.rawValue)
+                    DispatchQueue.main.async {
+                        SVProgressHUD.dismiss()
+                        
+                        if jsonString?.range(of: "Expected version") != nil {
+                            self.showJHTAlerttOkayWithIcon(message: AlertMessages.oldVersion.rawValue)
+                        } else if jsonString?.range(of: "Invalid password") != nil {
+                            self.showJHTAlerttOkayWithIcon(message: Constants.wrongPassword)
+                        } else {
+                            self.showJHTAlerttOkayWithIcon(message: AlertMessages.somethingWrong.rawValue)
+                        }
+                    }
                 }
                 
             } catch let jsonErr {
@@ -386,7 +413,7 @@ extension LoginController {
         
     }
     
-    private func showErrorMessage(message: String) {
+    fileprivate func showErrorMessage(message: String) {
         DispatchQueue.main.async {
             SVProgressHUD.dismiss()
             self.showJHTAlerttOkayWithIcon(message: message)
@@ -470,6 +497,8 @@ extension LoginController {
                             
                             if responseString?.range(of: "Expected version") != nil {
                                 self.showJHTAlerttOkayWithIcon(message: AlertMessages.oldVersion.rawValue)
+                            } else if responseString?.range(of: "Invalid password") != nil {
+                                self.showJHTAlerttOkayWithIcon(message: Constants.wrongPassword)
                             } else {
                                 self.showJHTAlerttOkayWithIcon(message: AlertMessages.somethingWrong.rawValue)
                             }
@@ -673,7 +702,7 @@ extension LoginController {
         usernameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         
         view.addSubview(qrScanButton)
-        _ = qrScanButton.anchor(nil, left: nil, bottom: nil, right: passwordTextField.leftAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 5, widthConstant: 30, heightConstant: 30)
+        _ = qrScanButton.anchor(nil, left: nil, bottom: nil, right: passwordTextField.leftAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 15, widthConstant: 25, heightConstant: 25)
         qrScanButton.centerYAnchor.constraint(equalTo: passwordTextField.centerYAnchor).isActive = true
         qrScanButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         

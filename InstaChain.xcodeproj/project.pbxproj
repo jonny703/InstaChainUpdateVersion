@@ -86,6 +86,8 @@
 		07FBE974202939A300E06474 /* CommentReplyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBE973202939A300E06474 /* CommentReplyCell.swift */; };
 		07FBE9762029B58B00E06474 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBE9752029B58B00E06474 /* Comment.swift */; };
 		07FBE98A202B446C00E06474 /* LookupUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBE989202B446C00E06474 /* LookupUser.swift */; };
+		0A0DF60F2034D560009EE949 /* PrivateMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0DF60E2034D560009EE949 /* PrivateMessage.swift */; };
+		0A0DF6112034D8B9009EE949 /* Extension+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0DF6102034D8B9009EE949 /* Extension+Codable.swift */; };
 		9B9C9CE56F0CE3CA6C6B5497 /* Pods_InstaChain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DDB29A69D342EDBAA5C379A /* Pods_InstaChain.framework */; };
 /* End PBXBuildFile section */
 
@@ -171,6 +173,8 @@
 		07FBE973202939A300E06474 /* CommentReplyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentReplyCell.swift; sourceTree = "<group>"; };
 		07FBE9752029B58B00E06474 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		07FBE989202B446C00E06474 /* LookupUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookupUser.swift; sourceTree = "<group>"; };
+		0A0DF60E2034D560009EE949 /* PrivateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateMessage.swift; sourceTree = "<group>"; };
+		0A0DF6102034D8B9009EE949 /* Extension+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension+Codable.swift"; sourceTree = "<group>"; };
 		0DDB29A69D342EDBAA5C379A /* Pods_InstaChain.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InstaChain.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3778AB2463DA5B6C583ECB03 /* Pods-InstaChain.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InstaChain.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InstaChain/Pods-InstaChain.debug.xcconfig"; sourceTree = "<group>"; };
 		69D106AE66AD7FF146684E18 /* Pods-InstaChain.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InstaChain.release.xcconfig"; path = "Pods/Target Support Files/Pods-InstaChain/Pods-InstaChain.release.xcconfig"; sourceTree = "<group>"; };
@@ -373,6 +377,7 @@
 				0773F4BB2020DCCA005874B9 /* Extension+UIView.swift */,
 				0773F4BD2020DCCA005874B9 /* Extension+UserDefault.swift */,
 				0701B818202123AA0001357C /* Extension+UIImage.swift */,
+				0A0DF6102034D8B9009EE949 /* Extension+Codable.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -411,6 +416,7 @@
 				07FBE9752029B58B00E06474 /* Comment.swift */,
 				07FBE989202B446C00E06474 /* LookupUser.swift */,
 				071B3157202F68EB00CBBA53 /* LoginResponse.swift */,
+				0A0DF60E2034D560009EE949 /* PrivateMessage.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -489,7 +495,7 @@
 				TargetAttributes = {
 					079A523C2020CD23000C051B = {
 						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -586,6 +592,7 @@
 				"${BUILT_PRODUCTS_DIR}/IQKeyboardManager/IQKeyboardManager.framework",
 				"${BUILT_PRODUCTS_DIR}/ImagePicker/ImagePicker.framework",
 				"${BUILT_PRODUCTS_DIR}/JHTAlertController/JHTAlertController.framework",
+				"${BUILT_PRODUCTS_DIR}/KRPullLoader/KRPullLoader.framework",
 				"${BUILT_PRODUCTS_DIR}/Lightbox/Lightbox.framework",
 				"${BUILT_PRODUCTS_DIR}/MTBBarcodeScanner/MTBBarcodeScanner.framework",
 				"${BUILT_PRODUCTS_DIR}/ObjectMapper/ObjectMapper.framework",
@@ -615,6 +622,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/IQKeyboardManager.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ImagePicker.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JHTAlertController.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KRPullLoader.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Lightbox.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MTBBarcodeScanner.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ObjectMapper.framework",
@@ -659,6 +667,7 @@
 				0701B83A20240D620001357C /* SettingController.swift in Sources */,
 				0701B8362023B55C0001357C /* NewDiscussionController.swift in Sources */,
 				0701B81B202167920001357C /* FollowersController.swift in Sources */,
+				0A0DF60F2034D560009EE949 /* PrivateMessage.swift in Sources */,
 				074DFB6A202738510063EDBB /* CommentInputAccessoryView.swift in Sources */,
 				0773F4C22020DCCA005874B9 /* Extension+UIImageView.swift in Sources */,
 				07FBE98A202B446C00E06474 /* LookupUser.swift in Sources */,
@@ -697,6 +706,7 @@
 				0701B8342023AD500001357C /* AlertMessages.swift in Sources */,
 				0701B813202120760001357C /* BaseCollectionViewCell.swift in Sources */,
 				0773F4C92020DCD3005874B9 /* AssetName.swift in Sources */,
+				0A0DF6112034D8B9009EE949 /* Extension+Codable.swift in Sources */,
 				074DFB68202738120063EDBB /* CommentInputTextView.swift in Sources */,
 				0701B8212021784A0001357C /* MenuBar.swift in Sources */,
 				0773F4DF2020F270005874B9 /* RawData.swift in Sources */,
@@ -827,15 +837,16 @@
 			baseConfigurationReference = 3778AB2463DA5B6C583ECB03 /* Pods-InstaChain.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = M89857WV7K;
 				INFOPLIST_FILE = InstaChain/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.caesar.new;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "99babcd9-fec6-4632-9b4b-43ca7e804e9b";
-				PROVISIONING_PROFILE_SPECIFIER = new;
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -846,15 +857,16 @@
 			baseConfigurationReference = 69D106AE66AD7FF146684E18 /* Pods-InstaChain.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = M89857WV7K;
 				INFOPLIST_FILE = InstaChain/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.caesar.new;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "99babcd9-fec6-4632-9b4b-43ca7e804e9b";
-				PROVISIONING_PROFILE_SPECIFIER = new;
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

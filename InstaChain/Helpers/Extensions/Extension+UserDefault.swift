@@ -35,6 +35,32 @@ extension UserDefaults {
         case securityCode
         case darkMode
         case keyType
+        case memoKey
+        case mainKey
+    }
+    
+    func setPrivateMemoKey(_ code: String) {
+        set(code, forKey: UserDefaultsKeys.memoKey.rawValue)
+        synchronize()
+    }
+    
+    func getPrivateMemoKey() -> String? {
+        if let code = string(forKey: UserDefaultsKeys.memoKey.rawValue) {
+            return code
+        }
+        return nil
+    }
+    
+    func setPrivateMainKey(_ code: String) {
+        set(code, forKey: UserDefaultsKeys.mainKey.rawValue)
+        synchronize()
+    }
+    
+    func getPrivateMainKey() -> String? {
+        if let code = string(forKey: UserDefaultsKeys.mainKey.rawValue) {
+            return code
+        }
+        return nil
     }
     
     func setPrivateKeyType(_ code: String) {

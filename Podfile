@@ -38,5 +38,6 @@ target 'InstaChain' do
   pod 'PureLayout'
   pod 'AWSS3'
   pod 'PermissionScope'
+  pod 'KRPullLoader'
 
 end

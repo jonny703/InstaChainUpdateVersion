@@ -18,12 +18,12 @@ class CommentCell: BaseCollectionViewCell {
     var comment: PostData? {
         didSet {
             guard let comment = comment else { return }
-
+            
             let time = TimeDateUtils.timeAgoSinceDate(TimeDateUtils.convertStringToDate(date: comment.created, with: TimeDateUtils.DATE_TIME_FORMAT_1));
             
             let attributedText = NSMutableAttributedString(string: comment.author, attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 18), NSAttributedStringKey.foregroundColor: DarkModeManager.getDefaultTextColor()])
             attributedText.append(NSAttributedString(string: "          " + time + "\n\n" + comment.body, attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 16), NSAttributedStringKey.foregroundColor: DarkModeManager.getDefaultTextColor()]))
-
+            
             textView.attributedText = attributedText
             
             votesCount = comment.netVotes
@@ -111,6 +111,17 @@ class CommentCell: BaseCollectionViewCell {
         _ = textView.anchor(topAnchor, left: profileImageView.rightAnchor, bottom: stackView.topAnchor, right: rightAnchor, topConstant: 4, leftConstant: 8, bottomConstant: 0, rightConstant: 4, widthConstant: 0, heightConstant: 0)
     }
     
+    override func prepareForReuse() {
+        
+        self.profileImageView.image  = nil
+        self.likesLabel.text = "0 Likes"
+        self.textView.text = nil
+        
+        self.likesButton.tintColor = UIColor.lightGray
+        let image = UIImage(named: AssetName.normalLike.rawValue)
+        self.likesButton.setImage(image, for: .normal)
+    }
+    
     @objc private func handleReply() {
         
         guard let comment = comment else { return }
@@ -127,6 +138,12 @@ class CommentCell: BaseCollectionViewCell {
     }
     
     @objc private func handleLike() {
+        
+        guard checkPrivateKeyType() else {
+            commentController?.showJHTAlerttOkayWithIcon(message: AlertMessages.invalidPermission.rawValue)
+            return
+        }
+        
         self.likesButton.isUserInteractionEnabled = false
         guard let discussion = comment else { return }
         
@@ -134,9 +151,36 @@ class CommentCell: BaseCollectionViewCell {
         let permlink = discussion.permlink
         let weight = isUserLikePost ? 0 : 10000
         
-        guard let wif = CurrentSession.getI().localData.privWif?.active else { return }
+        guard let wif = getPrivateKey() else { return }
         
         self.giveVoteToPost(author: author, permlink: permlink, weight: weight, wif: wif)
+    }
+    
+    fileprivate func checkPrivateKeyType() -> Bool {
+        
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return false }
+        
+        if privateKeyType == PrivateKeyType.memo.rawValue {
+            return false
+        } else {
+            return true
+        }
+    }
+    
+    fileprivate func getPrivateKey() -> String? {
+        guard let privateKeyType = UserDefaults.standard.getPrivateKeyType() else { return nil }
+        if privateKeyType == PrivateKeyType.owner.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.owner else { return nil }
+            return key
+        } else if privateKeyType == PrivateKeyType.posting.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.posting else { return nil }
+            return key
+        } else if privateKeyType == PrivateKeyType.active.rawValue {
+            guard let key = CurrentSession.getI().localData.privWif?.active else { return nil }
+            return key
+        }
+        
+        return nil
     }
     
     @objc private func handleProfileImageTap() {
@@ -237,3 +281,4 @@ class CommentCell: BaseCollectionViewCell {
         }
     }
 }
+

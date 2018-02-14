@@ -12,6 +12,7 @@ import DZNEmptyDataSet
 import SVProgressHUD
 import CLImageEditor
 import ImagePicker
+import KRPullLoader
 
 class HomeController: UIViewController {
     
@@ -171,6 +172,48 @@ extension HomeController {
     
 }
 
+//MARK: handle krpullloader delegate
+extension HomeController: KRPullLoadViewDelegate {
+    func pullLoadView(_ pullLoadView: KRPullLoadView, didChangeState state: KRPullLoaderState, viewType type: KRPullLoaderType) {
+        
+        if type == .loadMore {
+            switch state {
+                
+            case let .loading(completionHandler):
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+1) {
+                    completionHandler()
+                    
+                }
+                
+            default:
+                break
+            }
+            
+            return
+        }
+        
+        switch state {
+        case .none:
+            pullLoadView.messageLabel.text = ""
+            
+        case let .pulling(offset, threshould):
+            if offset.y > threshould {
+                pullLoadView.messageLabel.text = ""
+            } else {
+                pullLoadView.messageLabel.text = ""
+            }
+            
+        case let .loading(completionHandler):
+            pullLoadView.messageLabel.text = "Updating..."
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+1) {
+                completionHandler()
+                self.fetchHomeFeed()
+            }
+        }
+        
+    }
+}
+
 extension HomeController: ImagePickerDelegate {
     func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage]) {
         
@@ -187,7 +230,7 @@ extension HomeController: ImagePickerDelegate {
     }
     
     func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-        
+        imagePicker.dismiss(animated: true, completion: nil)
     }
     
     // Edit the selected image
@@ -457,6 +500,10 @@ extension HomeController {
         
         view.addSubview(collectionView)
         _ = collectionView.anchor(segmentControl.bottomAnchor, left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, topConstant: 0, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 0)
+        
+        let refreshView = KRPullLoadView()
+        refreshView.delegate = self
+        collectionView.addPullLoadableView(refreshView)
     }
     
     private func setupSegmentControl() {
@@ -482,3 +529,4 @@ extension HomeController {
     }
     
 }
+

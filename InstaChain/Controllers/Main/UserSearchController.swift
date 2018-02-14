@@ -17,7 +17,7 @@ class UserSearchController: UIViewController {
     
     var sendRepliesCount = 0
     var recievedRepliesCount = 0
-
+    
     var lookupUsers = [LookupUser]()
     
     lazy var searchBar: UISearchBar = {
@@ -120,7 +120,9 @@ extension UserSearchController {
             self.dismissHud()
             guard let data = data else { return }
             
-            guard let nameArray = self.getArrayFrom(data: data) else { return }
+            guard var nameArray = self.getArrayFrom(data: data) else { return }
+            
+            nameArray = nameArray.filter { $0.contains(name)}
             
             self.lookupUsers.removeAll()
             
@@ -131,7 +133,7 @@ extension UserSearchController {
                 
             }
             
-        }.resume()
+            }.resume()
     }
     
     private func getArrayFrom(data: Data) -> [String]? {
@@ -206,11 +208,13 @@ extension UserSearchController: UICollectionViewDataSource, UICollectionViewDele
             return
         }
         
-        let image = UIImage(named: AssetName.leftArrow.rawValue)
-        let backButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(profileController.dismissController))
-        profileController.navigationItem.leftBarButtonItem = backButton
-        profileController.navigationItem.title = "Profile"
-        navigationController?.pushViewController(profileController, animated: true)
+        self.handleSendPrivateMessage(toName: user.name)
+        
+//        let image = UIImage(named: AssetName.leftArrow.rawValue)
+//        let backButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(profileController.dismissController))
+//        profileController.navigationItem.leftBarButtonItem = backButton
+//        profileController.navigationItem.title = "Profile"
+//        navigationController?.pushViewController(profileController, animated: true)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -226,6 +230,78 @@ extension UserSearchController: UICollectionViewDataSource, UICollectionViewDele
     }
 }
 
+extension UserSearchController {
+    
+    fileprivate func handleGetPrivateMessageHistory() {
+        let userDefaults = UserDefaults.standard
+        
+        if userDefaults.getPrivateKeyType() != PrivateKeyType.owner.rawValue {
+            self.showJHTAlerttOkayWithIcon(message: "Sorry, you have no permission to send a private message")
+            return
+        }
+        
+        guard let memoKey = userDefaults.getPrivateMemoKey() else { return }
+        
+        //get privte message histroy
+    }
+    
+    fileprivate func handleSendPrivateMessage(toName: String) {
+        
+        let userDefaults = UserDefaults.standard
+        
+        if userDefaults.getPrivateKeyType() != PrivateKeyType.owner.rawValue {
+            self.showJHTAlerttOkayWithIcon(message: "Sorry, you have no permission to send a private message")
+            return
+        }
+        
+        guard let memoKey = userDefaults.getPrivateMemoKey() else { return }
+        guard let mainKey = userDefaults.getPrivateMainKey() else { return }
+        guard let fromName = CurrentSession.getI().localData.userBaseInfo?.name else { return }
+        
+        let privateMessage = PrivateMessage(from: fromName, to: toName, amount: PRIVATE_MESSAGE_AMOUNT, memo: "hello", priv_memo_wif: memoKey, wif: mainKey)
+        
+        guard let urlStr = ServerUrls.sendPrivateMessage.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            let url = URL(string: urlStr) else {
+                return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let session = URLSession.shared
+        
+        do {
+            let jsonBody = try JSONEncoder().encode(privateMessage)
+            request.httpBody = jsonBody
+        } catch let jsonError {
+            print("Error serializing ", jsonError)
+        }
+        
+        let task = session.dataTask(with: request) { (data, response, error) in
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("error \(httpResponse.statusCode)")
+                
+                if httpResponse.statusCode == 200 {
+                    DispatchQueue.main.async {
+                        self.showJHTAlerttOkayWithIcon(message: "Success!")
+                    }
+                }
+            } else {
+                
+            }
+            
+            if let error = error {
+                print("Error for update profile: ", error.localizedDescription)
+                return
+            }
+            
+        }
+        task.resume()
+    }
+    
+}
+
 extension UserSearchController: UISearchBarDelegate{
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
     }
@@ -238,7 +314,7 @@ extension UserSearchController: UISearchBarDelegate{
         
         guard let searchName = searchBar.text else { return }
         
-//        self.getUserInfo(name: searchName)
+        //        self.getUserInfo(name: searchName)
         self.getLookupAccounts(name: searchName)
         
     }

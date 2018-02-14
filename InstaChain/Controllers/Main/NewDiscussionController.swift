@@ -135,7 +135,7 @@ extension NewDiscussionController {
         }
         tagsTextField.text = ""
     }
- 
+    
     fileprivate func checkInvalid() -> Bool {
         
         if (titleTextField.text?.isEmptyStr)! {
@@ -149,7 +149,7 @@ extension NewDiscussionController {
         }
         
         if tagStrings.count == 0 {
-            self.showJHTAlerttOkayWithIcon(message: "Invalid Tag!\nPlease enter valid tag")
+            self.showJHTAlerttOkayWithIcon(message: "Please enter a tag")
             return false
         }
         return true
@@ -391,7 +391,7 @@ extension NewDiscussionController: ImagePickerDelegate {
     }
     
     func cancelButtonDidPress(_ imagePicker: ImagePickerController) {
-        
+        imagePicker.dismiss(animated: true, completion: nil)
     }
 }
 
@@ -486,7 +486,7 @@ extension NewDiscussionController {
         view.addSubview(cloudView)
         _ = cloudView.anchor(tagsTextField.bottomAnchor, left: titleTextField.leftAnchor, bottom: nil, right: titleTextField.rightAnchor, topConstant: 20, leftConstant: 0, bottomConstant: 0, rightConstant: 0, widthConstant: 0, heightConstant: 130)
         
-//        tagView.addSubview(cloudView)
+        //        tagView.addSubview(cloudView)
     }
 }
 
